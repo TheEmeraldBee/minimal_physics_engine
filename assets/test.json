@@ -1,0 +1,30 @@
+{
+  "level_solids": [
+    {
+      "x": -50,
+      "y": -125,
+      "width": 250,
+      "height": 25,
+      "tags": ["moving_platform"],
+      "uuid": "5f976860-5755-4cc9-8021-2d6f4aba80d9"
+    },
+    {
+      "x": 0,
+      "y": -150,
+      "width": 500,
+      "height": 20
+    },
+    {
+      "x": -250,
+      "y": -150,
+      "width": 200,
+      "height": 20
+    },
+    {
+      "x": 0,
+      "y": 300,
+      "width": 600,
+      "height": 20
+    }
+  ]
+}

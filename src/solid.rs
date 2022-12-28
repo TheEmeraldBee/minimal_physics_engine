@@ -8,18 +8,37 @@ use crate::prelude::Collider;
 pub struct Solid {
     pub uuid: Uuid,
     pub remainder: Vec2,
-    pub collider: Collider
+    pub collider: Collider,
+    pub(crate) tags: Vec<String>
 }
 
 impl Solid {
 
     /// Requires an ID. Id MUST be different than other SOLID's ID's.
-    pub fn new(collider: Collider, uuid: Uuid) -> Self {
+    pub fn new(collider: Collider, uuid: Uuid, tags: Option<Vec<String>>) -> Self {
         Self {
             uuid,
             remainder: Default::default(),
-            collider
+            collider,
+            tags: match tags {
+                Some(tags) => tags,
+                None => vec![]
+            }
         }
+    }
+
+    pub fn tag(&mut self, tag: &str) {
+        if !self.tags.contains(&tag.to_string()) {
+            self.tags.push(tag.to_string());
+        }
+    }
+
+    pub fn untag(&mut self, tag: &str) {
+        self.tags.retain(|x| x.as_str() != tag);
+    }
+
+    pub fn has_tag(&self, tag: &str) -> bool {
+        self.tags.contains(&tag.to_string())
     }
 
     pub fn move_x(&mut self, distance: f32, actors: &mut Vec<Actor>) -> Vec<SolidInteraction> {

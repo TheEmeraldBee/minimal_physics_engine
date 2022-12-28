@@ -51,6 +51,18 @@ impl SolidStorage {
             Err(MissingIDError { error: format!("Expected an solid with id {}, but did not find one.", solid_uuid) })
         }
     }
+
+    pub fn get_solids_with_tag(&mut self, tag: &str) -> Vec<Uuid> {
+        let mut solids = vec![];
+
+        for solid in self.solids.iter_mut() {
+            if solid.has_tag(tag) {
+                solids.push(solid.uuid);
+            }
+        }
+
+        solids
+    }
 }
 
 #[derive(Debug)]
@@ -90,7 +102,7 @@ impl PhysicsEngine {
         }
     }
 
-    pub fn move_solid(&mut self, solid_uuid: Uuid, distance: Vec2) {
+    pub fn move_solid(&mut self, solid_uuid: Uuid, distance: Vec2) -> Result<(), String> {
         for solid_index in 0..self.solid_storage.solids.len() {
             if self.solid_storage.solids[solid_index].uuid == solid_uuid {
                 let y_interactions = self.solid_storage.solids[solid_index].move_y(distance.y, &mut self.actor_storage.actors);
@@ -98,8 +110,12 @@ impl PhysicsEngine {
 
                 let x_interactions = self.solid_storage.solids[solid_index].move_x(distance.x, &mut self.actor_storage.actors);
                 self.handle_interactions(&x_interactions, self.solid_storage.solids[solid_index].uuid);
+
+                return Ok(())
             }
         }
+
+        Err(format!("No Actor with UUID: {}.", solid_uuid))
     }
 
     /// Must be run at end of function to clean up other calls.
@@ -110,7 +126,7 @@ impl PhysicsEngine {
     }
 
     /// Spawns a solid and returns the id of the solid
-    pub fn spawn_solid(&mut self, solid_collider: Collider) -> Uuid {
+    pub fn spawn_solid(&mut self, solid_collider: Collider, tags: Option<Vec<String>>) -> Uuid {
         let mut uuid;
 
         loop {
@@ -121,7 +137,7 @@ impl PhysicsEngine {
             }
         }
 
-        self.solid_storage.solids.push(Solid::new(solid_collider, uuid));
+        self.solid_storage.solids.push(Solid::new(solid_collider, uuid, tags));
 
         uuid
     }

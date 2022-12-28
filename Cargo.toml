@@ -7,9 +7,13 @@ edition = "2021"
 
 [dependencies]
 macroquad = "0.3.25"
-hecs = {version = "0.9.1", optional = true }
 uuid = {version = "1.2.2", features = ["v4", "fast-rng", "macro-diagnostics"]}
+serde = {version = "1.0.151", optional = true, features = ["derive"]}
+serde_json = {version = "1.0.91", optional = true}
 
 [features]
-hecs_support = ["dep:hecs"]
-expanded_engine = []
+expanded_engine = ["dep:serde", "dep:serde_json"]
+
+[[example]]
+name = "physics_example"
+required-features = ["expanded_engine"]
