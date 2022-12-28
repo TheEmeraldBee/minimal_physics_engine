@@ -11,3 +11,4 @@ hecs = {version = "0.9.1", optional = true }
 
 [features]
 hecs_support = ["dep:hecs"]
+expanded_engine = []

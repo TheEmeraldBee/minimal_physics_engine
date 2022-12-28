@@ -71,6 +71,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         player.handle_riding(&mut engine)?;
 
         player.update(&mut engine)?;
+
         for actor in engine.actor_storage.actors.iter_mut() {
             draw_rectangle(actor.collider.x as f32, actor.collider.y as f32, actor.collider.width as f32, actor.collider.height as f32, Color::new(0.5, 0.5, 0.5, 1.0));
         }

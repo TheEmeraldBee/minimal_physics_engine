@@ -1,8 +1,6 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use macroquad::color::Color;
 use macroquad::math::Vec2;
-use macroquad::prelude::{draw_rectangle, get_frame_time};
 use crate::actor::CollisionCallback;
 use crate::prelude::{Actor, Solid};
 use crate::solid::SolidInteraction;
