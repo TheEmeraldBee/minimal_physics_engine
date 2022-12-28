@@ -7,3 +7,6 @@ pub mod solid;
 pub mod math;
 
 pub mod prelude;
+
+#[cfg(feature = "hecs_support")]
+pub mod hecs_support;

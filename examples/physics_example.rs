@@ -52,7 +52,7 @@ impl Player {
     }
 }
 
-#[macroquad::main("Testing")]
+#[macroquad::main("Physics Engine Example")]
 async fn main() -> Result<(), Box<dyn Error>> {
     let mut engine = PhysicsEngine::new();
 
@@ -70,20 +70,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         player.handle_riding(&mut engine)?;
 
-        for solid_index in 0..engine.solid_storage.solids.len() {
-            let solid = &engine.solid_storage.solids[solid_index];
-            draw_rectangle(solid.collider.x as f32, solid.collider.y as f32, solid.collider.width as f32, solid.collider.height as f32, Color::new(0.8, 0.5, 0.5, 1.0));
-
-            let y_interactions = engine.solid_storage.solids[solid_index].move_y(10.0 * get_frame_time(), &mut engine.actor_storage.actors);
-            engine.handle_interactions(&y_interactions, engine.solid_storage.solids[solid_index].id);
-
-            let x_interactions = engine.solid_storage.solids[solid_index].move_x(25.0 * get_frame_time(), &mut engine.actor_storage.actors);
-            engine.handle_interactions(&x_interactions, engine.solid_storage.solids[solid_index].id);
-        }
-
         player.update(&mut engine)?;
         for actor in engine.actor_storage.actors.iter_mut() {
             draw_rectangle(actor.collider.x as f32, actor.collider.y as f32, actor.collider.width as f32, actor.collider.height as f32, Color::new(0.5, 0.5, 0.5, 1.0));
+        }
+
+        engine.move_solid(0, Vec2::new(20.0 * get_frame_time(), 20.0 * get_frame_time()));
+
+        for solid in engine.solid_storage.solids.iter() {
+            draw_rectangle(solid.collider.x as f32, solid.collider.y as f32, solid.collider.width as f32, solid.collider.height as f32, Color::new(0.6, 0.5, 0.5, 1.0));
         }
 
         // Finish updating the physics engine

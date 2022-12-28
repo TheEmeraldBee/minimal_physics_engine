@@ -1,5 +1,8 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use macroquad::color::Color;
+use macroquad::math::Vec2;
+use macroquad::prelude::{draw_rectangle, get_frame_time};
 use crate::actor::CollisionCallback;
 use crate::prelude::{Actor, Solid};
 use crate::solid::SolidInteraction;
@@ -15,7 +18,6 @@ pub struct ActorStorage {
 
 impl ActorStorage {
     pub fn get_actor(&mut self, actor_id: i32) -> Result<&mut Actor, MissingIDError> {
-        // Try to get the actor in the engine
         let mut my_actor_option = None;
         for actor in self.actors.iter_mut() {
             if actor.id == actor_id {
@@ -33,6 +35,23 @@ impl ActorStorage {
 
 pub struct SolidStorage {
     pub solids: Vec<Solid>
+}
+
+impl SolidStorage {
+    pub fn get_solid(&mut self, solid_id: i32) -> Result<&mut Solid, MissingIDError> {
+        let mut my_solid_option = None;
+        for solid in self.solids.iter_mut() {
+            if solid.id == solid_id {
+                my_solid_option = Some(solid)
+            }
+        }
+
+        return if let Some(my_solid) = my_solid_option {
+            Ok(my_solid)
+        } else {
+            Err(MissingIDError { error: format!("Expected an solid with id {}, but did not find one.", solid_id) })
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -68,6 +87,18 @@ impl PhysicsEngine {
                 if actor.id == interaction.actor_id {
                     actor.move_exact(interaction.motion, CollisionCallback::Squish, &solids)
                 }
+            }
+        }
+    }
+
+    pub fn move_solid(&mut self, solid_id: i32, distance: Vec2) {
+        for solid_index in 0..self.solid_storage.solids.len() {
+            if self.solid_storage.solids[solid_index].id == solid_id {
+                let y_interactions = self.solid_storage.solids[solid_index].move_y(distance.y, &mut self.actor_storage.actors);
+                self.handle_interactions(&y_interactions, self.solid_storage.solids[solid_index].id);
+
+                let x_interactions = self.solid_storage.solids[solid_index].move_x(distance.x, &mut self.actor_storage.actors);
+                self.handle_interactions(&x_interactions, self.solid_storage.solids[solid_index].id);
             }
         }
     }
