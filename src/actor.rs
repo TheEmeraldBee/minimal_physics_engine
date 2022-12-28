@@ -34,12 +34,12 @@ impl Actor {
         }
     }
 
-    pub fn move_actor(&mut self, distance: Vec2, callback: CollisionCallback, solids: &Vec<Solid>) {
+    pub(crate) fn move_actor(&mut self, distance: Vec2, callback: CollisionCallback, solids: &Vec<Solid>) {
         self.move_x(distance.x, callback, solids);
         self.move_y(distance.y, callback, solids);
     }
 
-    pub fn move_x(&mut self, distance: f32, callback: CollisionCallback, solids: &Vec<Solid>) {
+    pub(crate) fn move_x(&mut self, distance: f32, callback: CollisionCallback, solids: &Vec<Solid>) {
         self.remainder.x += distance;
         let move_amount = self.remainder.x as i32;
         self.remainder.x -= move_amount as f32;
@@ -47,7 +47,7 @@ impl Actor {
         self.move_x_exact(move_amount, callback, solids);
     }
 
-    pub fn move_y(&mut self, distance: f32, callback: CollisionCallback, solids: &Vec<Solid>) {
+    pub(crate) fn move_y(&mut self, distance: f32, callback: CollisionCallback, solids: &Vec<Solid>) {
         self.remainder.y += distance;
         let move_amount = self.remainder.y as i32;
         self.remainder.y -= move_amount as f32;
@@ -95,7 +95,7 @@ impl Actor {
         }
     }
 
-    fn handle_callback(&mut self, callback: CollisionCallback) {
+    pub(crate) fn handle_callback(&mut self, callback: CollisionCallback) {
         match callback {
             CollisionCallback::None => { }
             CollisionCallback::Squish => {
@@ -108,21 +108,11 @@ impl Actor {
         self.riding.clear();
     }
 
-    pub fn ride(&mut self, solid: &Solid) {
-        self.riding.push(solid.uuid);
+    pub(crate) fn ride(&mut self, solid_uuid: Uuid) {
+        self.riding.push(solid_uuid);
     }
 
-    pub fn is_riding(&self, solid: &Solid) -> bool {
-        self.riding.contains(&solid.uuid)
-    }
-
-    pub fn is_touching_solid(&self, offset: Vec2I32, solids: &Vec<Solid>) -> bool {
-        for solid in solids.iter() {
-            if self.collider.is_overlapping(offset, &solid.collider) {
-                return true;
-            }
-        }
-
-        false
+    pub(crate) fn is_riding(&self, solid_uuid: Uuid) -> bool {
+        self.riding.contains(&solid_uuid)
     }
 }

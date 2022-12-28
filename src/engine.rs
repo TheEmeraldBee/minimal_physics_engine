@@ -1,6 +1,7 @@
 use macroquad::math::Vec2;
 use uuid::Uuid;
 use crate::actor::CollisionCallback;
+use crate::math::Vec2I32;
 use crate::prelude::{Actor, Collider, Solid};
 use crate::solid::SolidInteraction;
 
@@ -71,8 +72,7 @@ impl PhysicsEngine {
         }
     }
 
-    /// ignore_id is the id of the solid that we need to ignore collisions with.
-    pub fn handle_interactions(&mut self, interactions: &Vec<SolidInteraction>, ignore_uuid: Uuid) {
+    fn handle_interactions(&mut self, interactions: &Vec<SolidInteraction>, ignore_uuid: Uuid) {
 
         // Retain the solid that was the interaction has.
         let mut solids = self.solid_storage.solids.clone();
@@ -112,6 +112,41 @@ impl PhysicsEngine {
         }
 
         Err(format!("No Actor with UUID: {}", actor_uuid))
+    }
+
+    pub fn check_overlapping_solid(&mut self, actor_uuid: Uuid, check_offset: Vec2I32) -> Result<bool, String> {
+        let actor = self.actor_storage.get_actor(actor_uuid)?;
+
+        for solid in self.solid_storage.solids.iter() {
+            if actor.collider.is_overlapping(check_offset, &solid.collider) {
+                return Ok(true)
+            }
+        }
+
+        Ok(false)
+    }
+
+    pub fn get_overlapping_solids(&mut self, actor_uuid: Uuid, check_offset: Vec2I32) -> Result<Vec<Uuid>, String> {
+        let actor = self.actor_storage.get_actor(actor_uuid)?;
+        let mut colliding_uuids = vec![];
+
+        for solid in self.solid_storage.solids.iter() {
+            if actor.collider.is_overlapping(check_offset, &solid.collider) {
+                colliding_uuids.push(solid.uuid);
+            }
+        }
+
+        Ok(colliding_uuids)
+    }
+
+    pub fn ride(&mut self, actor_uuid: Uuid, solid_uuid: Uuid) -> Result<(), String> {
+        let actor = self.actor_storage.get_actor(actor_uuid)?;
+        actor.ride(solid_uuid);
+        Ok(())
+    }
+
+    pub fn check_squished(&mut self, actor_uuid: Uuid) -> Result<bool, String> {
+        Ok(self.actor_storage.get_actor(actor_uuid)?.squished)
     }
 
     /// Must be run at end of function to clean up the engine.

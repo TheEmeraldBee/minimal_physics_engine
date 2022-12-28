@@ -16,12 +16,8 @@ pub struct Player {
 
 impl Player {
     pub fn handle_riding(&mut self, engine: &mut PhysicsEngine) -> Result<(), String> {
-        let my_actor = engine.actor_storage.get_actor(self.actor_uuid)?;
-
-        for solid in &engine.solid_storage.solids {
-            if my_actor.collider.is_overlapping(vec2i32(0, -1), &solid.collider) {
-                my_actor.ride(&solid);
-            }
+        for solid_uuid in engine.get_overlapping_solids(self.actor_uuid, vec2i32(0, -1))? {
+            engine.ride(self.actor_uuid, solid_uuid)?;
         }
 
         Ok(())
@@ -40,7 +36,7 @@ impl Player {
 
         self.velocity.y -= 150.0 * get_frame_time();
 
-        if engine.actor_storage.get_actor(self.actor_uuid)?.is_touching_solid(vec2i32(0, -1), &engine.solid_storage.solids) {
+        if engine.check_overlapping_solid(self.actor_uuid, vec2i32(0, -1))? {
             self.velocity.y = 0.0;
             if is_key_down(KeyCode::Space) {
                 // Jump!
@@ -52,15 +48,22 @@ impl Player {
 
         Ok(())
     }
+
+    pub fn check_end(&mut self, engine: &mut PhysicsEngine) -> Result<bool, String> {
+        engine.check_squished(self.actor_uuid)
+    }
 }
 
 #[macroquad::main("Physics Engine Example")]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Create a new Physics Engine
     let mut engine = PhysicsEngine::new();
 
+    // Spawn our player and create it's struct
     let player_uuid = engine.spawn_actor(Collider::new(0, 0, 25, 50));
     let mut player = Player { actor_uuid: player_uuid, velocity: vec2(0.0, 0.0) };
 
+    // Loads a json file with definitions of solids.
     load_level(&mut engine, "assets/test.json", false).await?;
 
     'running: loop {
@@ -73,16 +76,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         player.update(&mut engine)?;
 
-        for actor in engine.actor_storage.actors.iter_mut() {
-            draw_rectangle(actor.collider.x as f32, actor.collider.y as f32, actor.collider.width as f32, actor.collider.height as f32, Color::new(0.5, 0.5, 0.5, 1.0));
-        }
-
+        // Move solids with tag "moving_platform"
         for solid_uuid in engine.solid_storage.get_solids_with_tag("moving_platform") {
-            engine.move_solid(solid_uuid, Vec2::new(20.0 * get_frame_time(), 20.0 * get_frame_time()))?;
+            engine.move_solid(solid_uuid, Vec2::new(20.0 * get_frame_time(), 50.0 * get_frame_time()))?;
         }
 
+        if player.check_end(&mut engine)? {
+            break 'running
+        }
+
+        // Draw Solids and Actors.
         for solid in engine.solid_storage.solids.iter() {
             draw_rectangle(solid.collider.x as f32, solid.collider.y as f32, solid.collider.width as f32, solid.collider.height as f32, Color::new(0.6, 0.5, 0.5, 1.0));
+        }
+        for actor in engine.actor_storage.actors.iter() {
+            draw_rectangle(actor.collider.x as f32, actor.collider.y as f32, actor.collider.width as f32, actor.collider.height as f32, Color::new(0.5, 0.5, 0.5, 1.0));
         }
 
         // End the game

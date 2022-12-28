@@ -41,7 +41,7 @@ impl Solid {
         self.tags.contains(&tag.to_string())
     }
 
-    pub fn move_x(&mut self, distance: f32, actors: &mut Vec<Actor>) -> Vec<SolidInteraction> {
+    pub(crate) fn move_x(&mut self, distance: f32, actors: &mut Vec<Actor>) -> Vec<SolidInteraction> {
         self.remainder.x += distance;
         let move_distance = self.remainder.x as i32;
         self.remainder.x -= move_distance as f32;
@@ -64,7 +64,7 @@ impl Solid {
                             motion: vec2i32(self.collider.min_x() - actor.collider.max_x(), 0)
                         });
                     }
-                } else if actor.is_riding(self) {
+                } else if actor.is_riding(self.uuid) {
                     interactions.push(SolidInteraction {
                         actor_uuid: actor.uuid,
                         motion: vec2i32(move_distance, 0)
@@ -76,7 +76,7 @@ impl Solid {
         interactions
     }
 
-    pub fn move_y(&mut self, distance: f32, actors: &mut Vec<Actor>) -> Vec<SolidInteraction> {
+    pub(crate) fn move_y(&mut self, distance: f32, actors: &mut Vec<Actor>) -> Vec<SolidInteraction> {
         self.remainder.y += distance;
         let move_distance = self.remainder.y as i32;
         self.remainder.y -= move_distance as f32;
@@ -102,7 +102,7 @@ impl Solid {
                     }
 
                 }
-                else if actor.is_riding(self) {
+                else if actor.is_riding(self.uuid) {
                     interactions.push(SolidInteraction {
                         actor_uuid: actor.uuid,
                         motion: vec2i32(0, move_distance)
