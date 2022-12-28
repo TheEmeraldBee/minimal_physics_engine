@@ -1,5 +1,3 @@
-use std::error::Error;
-use std::fmt::{Display, Formatter};
 use macroquad::math::Vec2;
 use uuid::Uuid;
 use crate::actor::CollisionCallback;
@@ -16,7 +14,7 @@ pub struct ActorStorage {
 }
 
 impl ActorStorage {
-    pub fn get_actor(&mut self, actor_uuid: Uuid) -> Result<&mut Actor, MissingIDError> {
+    pub fn get_actor(&mut self, actor_uuid: Uuid) -> Result<&mut Actor, String> {
         let mut my_actor_option = None;
         for actor in self.actors.iter_mut() {
             if actor.uuid == actor_uuid {
@@ -27,7 +25,7 @@ impl ActorStorage {
         return if let Some(my_actor) = my_actor_option {
             Ok(my_actor)
         } else {
-            Err(MissingIDError { error: format!("Expected an actor with uuid {}, but did not find one.", actor_uuid) })
+            Err(format!("Expected an actor with uuid {}, but did not find one.", actor_uuid))
         }
     }
 }
@@ -37,7 +35,7 @@ pub struct SolidStorage {
 }
 
 impl SolidStorage {
-    pub fn get_solid(&mut self, solid_uuid: Uuid) -> Result<&mut Solid, MissingIDError> {
+    pub fn get_solid(&mut self, solid_uuid: Uuid) -> Result<&mut Solid, String> {
         let mut my_solid_option = None;
         for solid in self.solids.iter_mut() {
             if solid.uuid == solid_uuid {
@@ -48,7 +46,7 @@ impl SolidStorage {
         return if let Some(my_solid) = my_solid_option {
             Ok(my_solid)
         } else {
-            Err(MissingIDError { error: format!("Expected an solid with id {}, but did not find one.", solid_uuid) })
+            Err(format!("Expected an solid with id {}, but did not find one.", solid_uuid))
         }
     }
 
@@ -64,19 +62,6 @@ impl SolidStorage {
         solids
     }
 }
-
-#[derive(Debug)]
-pub struct MissingIDError {
-    pub error: String
-}
-
-impl Display for MissingIDError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.error)
-    }
-}
-
-impl Error for MissingIDError {}
 
 impl PhysicsEngine {
     pub fn new() -> Self {
@@ -115,11 +100,22 @@ impl PhysicsEngine {
             }
         }
 
-        Err(format!("No Actor with UUID: {}.", solid_uuid))
+        Err(format!("No Solid with UUID: {}", solid_uuid))
     }
 
-    /// Must be run at end of function to clean up other calls.
-    pub fn update(&mut self) {
+    pub fn move_actor(&mut self, actor_uuid: Uuid, distance: Vec2) -> Result<(), String> {
+        for actor in self.actor_storage.actors.iter_mut() {
+            if actor.uuid == actor_uuid {
+                actor.move_actor(distance, CollisionCallback::None, &self.solid_storage.solids);
+                return Ok(())
+            }
+        }
+
+        Err(format!("No Actor with UUID: {}", actor_uuid))
+    }
+
+    /// Must be run at end of function to clean up the engine.
+    pub fn end_update(&mut self) {
         for actor in self.actor_storage.actors.iter_mut() {
             actor.update();
         }

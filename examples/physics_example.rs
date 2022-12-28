@@ -15,7 +15,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn handle_riding(&mut self, engine: &mut PhysicsEngine) -> Result<(), MissingIDError> {
+    pub fn handle_riding(&mut self, engine: &mut PhysicsEngine) -> Result<(), String> {
         let my_actor = engine.actor_storage.get_actor(self.actor_uuid)?;
 
         for solid in &engine.solid_storage.solids {
@@ -27,9 +27,7 @@ impl Player {
         Ok(())
     }
 
-    pub fn update(&mut self, engine: &mut PhysicsEngine) -> Result<(), MissingIDError> {
-        let my_actor = engine.actor_storage.get_actor(self.actor_uuid)?;
-
+    pub fn update(&mut self, engine: &mut PhysicsEngine) -> Result<(), String> {
         let mut motion = 0;
         if is_key_down(KeyCode::Right) {
             motion += 1;
@@ -42,7 +40,7 @@ impl Player {
 
         self.velocity.y -= 150.0 * get_frame_time();
 
-        if my_actor.is_touching_solid(vec2i32(0, -1), &engine.solid_storage.solids) {
+        if engine.actor_storage.get_actor(self.actor_uuid)?.is_touching_solid(vec2i32(0, -1), &engine.solid_storage.solids) {
             self.velocity.y = 0.0;
             if is_key_down(KeyCode::Space) {
                 // Jump!
@@ -50,7 +48,7 @@ impl Player {
             }
         }
 
-        my_actor.move_actor(self.velocity * get_frame_time(), CollisionCallback::None, &engine.solid_storage.solids);
+        engine.move_actor(self.actor_uuid, self.velocity * get_frame_time())?;
 
         Ok(())
     }
@@ -87,13 +85,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
             draw_rectangle(solid.collider.x as f32, solid.collider.y as f32, solid.collider.width as f32, solid.collider.height as f32, Color::new(0.6, 0.5, 0.5, 1.0));
         }
 
-        // Finish updating the physics engine
-        engine.update();
-
         // End the game
         if is_key_down(KeyCode::Escape) {
             break 'running;
         }
+
+        // Finish updating the physics engine
+        engine.end_update();
 
         next_frame().await;
     }

@@ -2,7 +2,7 @@ use macroquad::math::Vec2;
 use macroquad::prelude::get_frame_time;
 use uuid::Uuid;
 use crate::actor::CollisionCallback;
-use crate::engine::{MissingIDError, PhysicsEngine};
+use crate::engine::{PhysicsEngine};
 
 pub struct ActorVelocity {
     pub uuid: Uuid,
@@ -17,7 +17,7 @@ impl ActorVelocity {
         }
     }
 
-    pub fn update(&mut self, engine: &mut PhysicsEngine) -> Result<(), MissingIDError>{
+    pub fn update(&mut self, engine: &mut PhysicsEngine) -> Result<(), String>{
         let my_actor = engine.actor_storage.get_actor(self.uuid)?;
         if self.velocity.x != 0.0 || self.velocity.y != 0.0 {
             my_actor.move_actor(self.velocity * get_frame_time(), CollisionCallback::None, &engine.solid_storage.solids);
