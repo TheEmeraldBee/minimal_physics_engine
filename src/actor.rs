@@ -1,4 +1,5 @@
 use macroquad::prelude::Vec2;
+use uuid::Uuid;
 use crate::collider::Collider;
 use crate::math::{vec2i32, Vec2I32};
 use crate::solid::Solid;
@@ -14,18 +15,18 @@ pub trait Riding {
 }
 
 pub struct Actor {
-    pub id: i32,
+    pub uuid: Uuid,
     pub remainder: Vec2,
     pub collider: Collider,
     pub squished: bool,
-    riding: Vec<i32>,
+    riding: Vec<Uuid>,
 }
 
 impl Actor {
     /// Make sure id is unused.
-    pub fn new(collider: Collider, id: i32) -> Self {
+    pub fn new(collider: Collider, uuid: Uuid) -> Self {
         Self {
-            id,
+            uuid,
             remainder: Default::default(),
             collider,
             squished: false,
@@ -108,11 +109,11 @@ impl Actor {
     }
 
     pub fn ride(&mut self, solid: &Solid) {
-        self.riding.push(solid.id);
+        self.riding.push(solid.uuid);
     }
 
     pub fn is_riding(&self, solid: &Solid) -> bool {
-        self.riding.contains(&solid.id)
+        self.riding.contains(&solid.uuid)
     }
 
     pub fn is_touching_solid(&self, offset: Vec2I32, solids: &Vec<Solid>) -> bool {

@@ -1,10 +1,11 @@
+use uuid::Uuid;
 use crate::engine::{MissingIDError, PhysicsEngine};
 use crate::prelude::{Actor, Solid};
 
 pub struct ActorLink {
-    actor_id: i32
+    actor_uuid: Uuid
 }
 
 pub struct SolidLink {
-    solid_id: i32
+    solid_uuid: Uuid
 }

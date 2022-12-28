@@ -1,22 +1,23 @@
 use macroquad::math::Vec2;
 use macroquad::time::get_frame_time;
+use uuid::Uuid;
 use crate::prelude::*;
 
 pub struct ActorVelocity {
-    pub id: i32,
+    pub uuid: Uuid,
     pub velocity: Vec2
 }
 
 impl ActorVelocity {
-    pub fn new(id: i32) -> Self {
+    pub fn new(uuid: Uuid) -> Self {
         Self {
-            id,
+            uuid,
             velocity: Vec2::splat(0.0)
         }
     }
 
     pub fn update(&mut self, engine: &mut PhysicsEngine) -> Result<(), MissingIDError>{
-        let mut my_actor = engine.actor_storage.get_actor(self.id)?;
+        let mut my_actor = engine.actor_storage.get_actor(self.uuid)?;
         if self.velocity.x != 0.0 || self.velocity.y != 0.0 {
             my_actor.move_actor(self.velocity * get_frame_time(), CollisionCallback::None, &engine.solid_storage.solids);
         }
@@ -26,21 +27,21 @@ impl ActorVelocity {
 }
 
 pub struct SolidVelocity {
-    pub id: i32,
+    pub uuid: Uuid,
     pub velocity: Vec2
 }
 
 impl SolidVelocity {
-    pub fn new(id: i32) -> Self {
+    pub fn new(uuid: Uuid) -> Self {
         Self {
-            id,
+            uuid,
             velocity: Vec2::splat(0.0)
         }
     }
 
     pub fn update(&mut self, engine: &mut PhysicsEngine) -> Result<(), MissingIDError>{
         if self.velocity.x != 0.0 || self.velocity.y != 0.0 {
-            engine.move_solid(self.id, self.velocity * get_frame_time());
+            engine.move_solid(self.uuid, self.velocity * get_frame_time());
         }
 
         Ok(())

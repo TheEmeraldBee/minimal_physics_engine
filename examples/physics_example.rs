@@ -4,18 +4,18 @@ extern crate core;
 
 use std::error::Error;
 use macroquad::prelude::*;
-use minimal_physics_engine::actor::Actor;
+use uuid::Uuid;
 use minimal_physics_engine::engine::PhysicsEngine;
 use minimal_physics_engine::prelude::*;
 
 pub struct Player {
-    actor_id: i32,
+    actor_uuid: Uuid,
     velocity: Vec2
 }
 
 impl Player {
     pub fn handle_riding(&mut self, engine: &mut PhysicsEngine) -> Result<(), MissingIDError> {
-        let my_actor = engine.actor_storage.get_actor(self.actor_id)?;
+        let my_actor = engine.actor_storage.get_actor(self.actor_uuid)?;
 
         for solid in &engine.solid_storage.solids {
             if my_actor.collider.is_overlapping(vec2i32(0, -1), &solid.collider) {
@@ -27,7 +27,7 @@ impl Player {
     }
 
     pub fn update(&mut self, engine: &mut PhysicsEngine) -> Result<(), MissingIDError> {
-        let my_actor = engine.actor_storage.get_actor(self.actor_id)?;
+        let my_actor = engine.actor_storage.get_actor(self.actor_uuid)?;
 
         let mut motion = 0;
         if is_key_down(KeyCode::Right) {
@@ -56,11 +56,11 @@ impl Player {
 async fn main() -> Result<(), Box<dyn Error>> {
     let mut engine = PhysicsEngine::new();
 
-    let mut player = Player { actor_id: 0, velocity: vec2(0.0, 0.0) };
+    let player_uuid = engine.spawn_actor(Collider::new(0, 0, 25, 50));
+    println!("{}", player_uuid);
+    let mut player = Player { actor_uuid: player_uuid, velocity: vec2(0.0, 0.0) };
 
-    engine.actor_storage.actors.push(Actor::new(Collider::new(0, 0, 25, 50), 0));
-
-    engine.solid_storage.solids.push(Solid::new(Collider::new(-50, -125, 250, 25), 0));
+    let solid_id = engine.spawn_solid(Collider::new(-50, -125, 250, 25));
 
     'running: loop {
         set_camera(&Camera2D {
@@ -76,7 +76,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             draw_rectangle(actor.collider.x as f32, actor.collider.y as f32, actor.collider.width as f32, actor.collider.height as f32, Color::new(0.5, 0.5, 0.5, 1.0));
         }
 
-        engine.move_solid(0, Vec2::new(20.0 * get_frame_time(), 20.0 * get_frame_time()));
+        engine.move_solid(solid_id, Vec2::new(20.0 * get_frame_time(), 20.0 * get_frame_time()));
 
         for solid in engine.solid_storage.solids.iter() {
             draw_rectangle(solid.collider.x as f32, solid.collider.y as f32, solid.collider.width as f32, solid.collider.height as f32, Color::new(0.6, 0.5, 0.5, 1.0));

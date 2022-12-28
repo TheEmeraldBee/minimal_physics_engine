@@ -1,11 +1,12 @@
 use macroquad::math::Vec2;
+use uuid::Uuid;
 use crate::actor::{Actor};
 use crate::math::{vec2i32, Vec2I32};
 use crate::prelude::Collider;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Solid {
-    pub id: i32,
+    pub uuid: Uuid,
     pub remainder: Vec2,
     pub collider: Collider
 }
@@ -13,9 +14,9 @@ pub struct Solid {
 impl Solid {
 
     /// Requires an ID. Id MUST be different than other SOLID's ID's.
-    pub fn new(collider: Collider, id: i32) -> Self {
+    pub fn new(collider: Collider, uuid: Uuid) -> Self {
         Self {
-            id,
+            uuid,
             remainder: Default::default(),
             collider
         }
@@ -35,18 +36,18 @@ impl Solid {
                 if self.collider.is_overlapping(vec2i32(0, 0), &actor.collider) {
                     if move_distance > 0 {
                         interactions.push(SolidInteraction {
-                            actor_id: actor.id,
+                            actor_uuid: actor.uuid,
                             motion: vec2i32(self.collider.max_x() - actor.collider.min_x(), 0)
                         });
                     } else {
                         interactions.push(SolidInteraction {
-                            actor_id: actor.id,
+                            actor_uuid: actor.uuid,
                             motion: vec2i32(self.collider.min_x() - actor.collider.max_x(), 0)
                         });
                     }
                 } else if actor.is_riding(self) {
                     interactions.push(SolidInteraction {
-                        actor_id: actor.id,
+                        actor_uuid: actor.uuid,
                         motion: vec2i32(move_distance, 0)
                     })
                 }
@@ -70,13 +71,13 @@ impl Solid {
                 if self.collider.is_overlapping(vec2i32(0, 0), &actor.collider) {
                     if move_distance > 0 {
                         interactions.push(SolidInteraction {
-                            actor_id: actor.id,
+                            actor_uuid: actor.uuid,
                             motion: vec2i32(0, self.collider.max_y() - actor.collider.min_y())
                         });
                     }
                     else {
                         interactions.push(SolidInteraction {
-                            actor_id: actor.id,
+                            actor_uuid: actor.uuid,
                             motion: vec2i32(0, self.collider.min_y() - actor.collider.max_y())
                         });
                     }
@@ -84,7 +85,7 @@ impl Solid {
                 }
                 else if actor.is_riding(self) {
                     interactions.push(SolidInteraction {
-                        actor_id: actor.id,
+                        actor_uuid: actor.uuid,
                         motion: vec2i32(0, move_distance)
                     })
                 }
@@ -97,6 +98,6 @@ impl Solid {
 
 #[derive(Debug, Copy, Clone)]
 pub struct SolidInteraction {
-    pub actor_id: i32,
+    pub actor_uuid: Uuid,
     pub motion: Vec2I32
 }
