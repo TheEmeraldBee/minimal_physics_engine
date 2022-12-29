@@ -36,6 +36,13 @@ impl Collider {
         self.y + self.height
     }
 
+    pub fn center_x(&self) -> i32 {
+        self.x + self.width / 2
+    }
+    pub fn center_y(&self) -> i32 {
+        self.y + self.height / 2
+    }
+
     /// Checks for AABB Collision between collider and self with an offset
     pub fn is_overlapping(&self, offset: Vec2I32, other: &Collider) -> bool {
         if !(self.enabled && other.enabled) { return false };

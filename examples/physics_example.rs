@@ -4,6 +4,7 @@ extern crate core;
 
 use std::error::Error;
 use macroquad::prelude::*;
+use macroquad::ui::root_ui;
 use uuid::Uuid;
 use minimal_physics_engine::engine::PhysicsEngine;
 use minimal_physics_engine::prelude::*;
@@ -34,7 +35,7 @@ impl Player {
 
         self.velocity.x = motion as f32 * 150.0;
 
-        self.velocity.y -= 150.0 * get_frame_time();
+        self.velocity.y -= 300.0 * get_frame_time();
 
         if engine.check_overlapping_solid(self.actor_uuid, vec2i32(0, -1))? {
             self.velocity.y = 0.0;
@@ -74,12 +75,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         player.handle_riding(&mut engine)?;
 
-        player.update(&mut engine)?;
-
         // Move solids with tag "moving_platform"
         for solid_uuid in engine.solid_storage.get_solids_with_tag("moving_platform") {
             engine.move_solid(solid_uuid, Vec2::new(20.0 * get_frame_time(), 50.0 * get_frame_time()))?;
         }
+
+        player.update(&mut engine)?;
 
         if player.check_end(&mut engine)? {
             break 'running

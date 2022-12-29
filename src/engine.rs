@@ -1,7 +1,7 @@
 use macroquad::math::Vec2;
 use uuid::Uuid;
 use crate::actor::CollisionCallback;
-use crate::math::Vec2I32;
+use crate::math::{Vec2I32};
 use crate::prelude::{Actor, Collider, Solid};
 use crate::solid::SolidInteraction;
 
@@ -81,6 +81,8 @@ impl PhysicsEngine {
         for interaction in interactions {
             for actor in self.actor_storage.actors.iter_mut() {
                 if actor.uuid == interaction.actor_uuid {
+                    actor.last_push_amount.x += interaction.motion.x;
+                    actor.last_push_amount.y += interaction.motion.y;
                     actor.move_exact(interaction.motion, CollisionCallback::Squish, &solids)
                 }
             }

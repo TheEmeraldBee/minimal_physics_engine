@@ -10,15 +10,12 @@ pub enum CollisionCallback {
     Squish
 }
 
-pub trait Riding {
-    fn is_riding(&self, actor: &Actor, solid: &Solid) -> bool;
-}
-
 pub struct Actor {
     pub uuid: Uuid,
     pub remainder: Vec2,
     pub collider: Collider,
     pub squished: bool,
+    pub last_push_amount: Vec2I32, // The distance you were last pushed
     riding: Vec<Uuid>,
 }
 
@@ -30,6 +27,7 @@ impl Actor {
             remainder: Default::default(),
             collider,
             squished: false,
+            last_push_amount: vec2i32(0, 0),
             riding: vec![]
         }
     }
@@ -106,6 +104,7 @@ impl Actor {
 
     pub(crate) fn update(&mut self) {
         self.riding.clear();
+        self.last_push_amount = vec2i32(0, 0);
     }
 
     pub(crate) fn ride(&mut self, solid_uuid: Uuid) {
