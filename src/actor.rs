@@ -66,6 +66,7 @@ impl Actor {
             for solid in solids {
                 // Check for collision
                 if self.collider.is_overlapping(vec2i32(step, 0), &solid.collider) {
+                    self.remainder.x = 0.0;
                     self.handle_callback(callback);
                     return;
                 }
@@ -83,6 +84,7 @@ impl Actor {
             for solid in solids {
                 // Check for collision
                 if self.collider.is_overlapping(vec2i32(0, step), &solid.collider) {
+                    self.remainder.y = 0.0;
                     self.handle_callback(callback);
                     return;
                 }
